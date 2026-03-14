@@ -237,6 +237,49 @@ def print_welcome(
     print(f"{Colors.BOLD}{Colors.BRIGHT_BLUE}{'═' * width}{Colors.RESET}\n")
 
 
+def get_user_decision() -> dict:
+    """Hämta användarens beslut för en interrupt."""
+    print(f"\n{Colors.BOLD}Välj ett alternativ:{Colors.RESET}")
+    print(f"  {Colors.BRIGHT_GREEN}1.{Colors.RESET} Godkänn och kör")
+    print(f"  {Colors.BRIGHT_RED}2.{Colors.RESET} Avvisa")
+
+    while True:
+        try:
+            choice = input(
+                f"\n{Colors.BOLD}{Colors.BRIGHT_GREEN}➤ {Colors.BRIGHT_CYAN}Ditt val (1/2):{Colors.RESET} "
+            ).strip()
+        except (EOFError, KeyboardInterrupt):
+            print(f"\n\n{Colors.YELLOW}Avslutar...{Colors.RESET}")
+            return {"type": "reject", "feedback": "Användaren avbröt"}
+
+        if choice == "1":
+            return {"type": "approve"}
+        elif choice == "2":
+            return {"type": "reject", "feedback": "User rejected the operation"}
+        else:
+            print(f"{Colors.YELLOW}Ogiltigt val. Välj 1 eller 2.{Colors.RESET}")
+
+
+def print_interrupt_info(result) -> bool:
+    """Visa information om en interrupt som kräver godkännande."""
+    interrupts = result.get("__interrupt__", [])
+    if not interrupts:
+        return False
+
+    print(f"\n{Colors.BOLD}{Colors.BRIGHT_YELLOW}{'═' * 60}{Colors.RESET}")
+    print(f"{Colors.BOLD}{Colors.BRIGHT_YELLOW}  ⚠  HUMAN-IN-THE-LOOP: Godkännande krävs!{Colors.RESET}")
+    print(f"{Colors.BOLD}{Colors.BRIGHT_YELLOW}{'═' * 60}{Colors.RESET}\n")
+
+    for interrupt in interrupts:
+        for action in interrupt.value.get("action_requests", []):
+            print(f"  {Colors.BOLD}Verktyg:{Colors.RESET}   {Colors.BRIGHT_CYAN}{action.get('name', 'N/A')}{Colors.RESET}")
+            args = action.get('arguments') or action.get('args', {})
+            print(f"  {Colors.BOLD}Argument:{Colors.RESET}  {Colors.DIM}{args}{Colors.RESET}")
+
+    print(f"\n{Colors.BOLD}{Colors.BRIGHT_YELLOW}{'═' * 60}{Colors.RESET}")
+    return True
+
+
 def print_goodbye(message: str = "Tack för att du använde agenten!") -> None:
     """Print a goodbye message.
     

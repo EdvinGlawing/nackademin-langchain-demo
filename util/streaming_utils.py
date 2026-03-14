@@ -249,7 +249,7 @@ def _handle_stream_sync(
                         print(_C.RESET)
                         streaming_reasoning = False
                     _divider(
-                        f"| STREAMING OUTPUT \u2190 {agent_name or 'Agent'}", _C.BLUE
+                        f"| {agent_name or 'Agent'} | OUTPUT", _C.BLUE
                     )
                     sys.stdout.write(f"  {_C.CYAN}")
                     streaming_text = True
