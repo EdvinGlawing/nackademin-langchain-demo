@@ -5,63 +5,67 @@ from util.models import get_model
 from util.streaming_utils import STREAM_MODES, handle_stream
 from util.pretty_print import get_user_input
 
-import datetime
 
-
-# ---------------- TOOL ----------------
 
 @tool
-def save_schedule_to_file(schedule: str) -> str:
+def read_file(file_path: str) -> str:
     """
-    Sparar ett schema till en textfil.
+    Läser innehållet i en lokal textfil.
     """
-    filename = f"schedule_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
 
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write(schedule)
+        # begränsa längd
+        return content[:5000]
 
-    return f"Schema sparat i fil: {filename}"
+    except Exception as e:
+        return f"Kunde inte läsa filen: {str(e)}"
 
 
-# ---------------- MAIN ----------------
 
 def run():
     model = get_model()
 
     agent = create_agent(
         model=model,
-        tools=[save_schedule_to_file],
+        tools=[read_file],
         system_prompt=(
             """
             <CONTEXT>
-            Du är en planeringsassistent som hjälper användare att skapa scheman.
-            Du kan även spara scheman till fil med ett verktyg.
+            Du är en assistent som kan läsa och analysera filer.
+            Du har tillgång till ett verktyg för att läsa filer från datorn.
             </CONTEXT>
 
             <OBJECTIVE>
-            Skapa ett veckoschema baserat på användarens behov.
-            När schemat är klart, använd verktyget för att spara det.
+            Hjälp användaren att:
+            - förstå innehåll i filer
+            - sammanfatta text
+            - förklara innehåll
+
+            Använd verktyget när en fil behöver läsas.
             </OBJECTIVE>
 
             <STYLE>
-            Strukturerad och tydlig.
+            Tydlig och informativ.
             </STYLE>
 
             <TONE>
-            Praktisk och hjälpsam.
+            Neutral och hjälpsam.
             </TONE>
 
             <AUDIENCE>
-            Personer som vill organisera sin tid bättre.
+            Personer som arbetar med dokument eller studier.
             </AUDIENCE>
 
             <RESPONSE_FORMAT>
-            1. Veckoschema (måndag–söndag)
-            2. Bekräftelse på sparad fil
+            - Sammanfattning
+            - Viktiga punkter
+            - Förklaring
             </RESPONSE_FORMAT>
 
             <USER_INPUT>
-            Användaren beskriver sitt schema och behov.
+            Användaren anger en fil eller frågar om innehåll.
             </USER_INPUT>
 """
         ),
@@ -70,7 +74,7 @@ def run():
     messages = []
 
     while True:
-        user_input = get_user_input("Beskriv din situation (skriv 'exit' för att avsluta)")
+        user_input = get_user_input("Ange fil eller fråga (skriv 'exit' för att avsluta)")
 
         if user_input.lower() in ["exit", "quit"]:
             break
@@ -90,7 +94,7 @@ def run():
 
         messages.append({
             "role": "assistant",
-            "content": "Schema genererat och sparat"
+            "content": "Fil analyserad"
         })
 
 
